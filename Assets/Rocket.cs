@@ -7,43 +7,51 @@ public class Rocket : MonoBehaviour
     public static Rocket rocket;
     public LayerMask groundMask;
 
-    float startingRocketMass; //in kilograms
+    //starting parameters
+    public float rocketMass; //in kg
+    public float fuelMass; //in kg
+    public float burnTime; //in seconds
+    public float impulse; //in newton-seconds
 
-    float fuelEjectionSpeed; //meters per second
-
-    float fuelEjectionRate; //mass per second
-
-    float engineBurnTime; //total burn time of engine
-
-
+    //data collection
     public Vector3 velocity;
-    float currentRocketMass;
-    float fuelConsumed;
+    public float totalRocketMass;
+    public float altitude;
+    public float thrust;
+    public float fuelEjectionSpeed;
+    public bool engineBurning;
+
+    GameObject smokeEffects;
+
+
+    float fuelLeft;
     float timeLeftOnBurn;
-    bool engineBurning;
 
     void Start() {
         //default values at sim start
-        startingRocketMass = 1;
-        fuelEjectionSpeed = 1;
-        fuelEjectionRate = 1;
-        engineBurnTime = 0;
+        rocketMass = 1;
+        fuelMass = 0.15f;
+        burnTime = 8;
+        impulse = 150;
+
         rocket = this;
-        currentRocketMass = startingRocketMass;
-        timeLeftOnBurn = engineBurnTime;
-        velocity = new Vector3(0, 0, 0);
+        smokeEffects = gameObject.transform.GetChild(0).gameObject;
+        ResetSim();
     }
 
     private void ResetSim() {
+        smokeEffects.SetActive(false);
         engineBurning = false;
         velocity = new Vector3(0, 0, 0);
         gameObject.transform.position = new Vector3(0, 5.3f, 0);
-        timeLeftOnBurn = engineBurnTime;
-        currentRocketMass = startingRocketMass;
+        timeLeftOnBurn = burnTime;
+        fuelLeft = fuelMass;
     }
 
     void Update()
     {
+        altitude = gameObject.transform.position.y;
+
         //reset
         if (Input.GetKeyDown(KeyCode.R)) {
             ResetSim();
@@ -53,22 +61,24 @@ public class Rocket : MonoBehaviour
         //launch rocket
         if (Input.GetKeyDown(KeyCode.Space)) {
             engineBurning = true;
+            smokeEffects.SetActive(true);
         }
 
         //when the engine time has been depleted, engine shuts off
         if (timeLeftOnBurn <= 0) {
             engineBurning = false;
+            smokeEffects.SetActive(false);
         }
 
         if (engineBurning) {
             //do something
             timeLeftOnBurn -= Time.deltaTime;
-            fuelConsumed += fuelEjectionRate * Time.deltaTime;
-            currentRocketMass -= fuelEjectionRate * Time.deltaTime;
+            fuelLeft -= (fuelMass / burnTime) * Time.deltaTime;
         }
 
         //physics calculations
-        velocity += (CalculateFNet() / currentRocketMass) * Time.deltaTime;
+        totalRocketMass = rocketMass + fuelLeft;
+        velocity += (CalculateFNet() / totalRocketMass) * Time.deltaTime;
         if (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0) {
             velocity.y = 0;
         }
@@ -76,26 +86,14 @@ public class Rocket : MonoBehaviour
     }
 
     Vector3 CalculateFNet() {        
-        Vector3 fG = new Vector3(0, -9.8f * currentRocketMass, 0);
-        Vector3 fThrust = new Vector3(0, engineBurning ? fuelEjectionRate * fuelEjectionSpeed : 0, 0);
+        Vector3 fG = new Vector3(0, -9.8f * totalRocketMass, 0);
+        Vector3 fThrust = new Vector3(0, engineBurning ? impulse / burnTime : 0, 0);
+        thrust = fThrust.magnitude;
         Vector3 fDrag = new Vector3();
         Vector3 fNormal = new Vector3(0,
-            (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0)? 9.8f * currentRocketMass : 0, 
+            (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0)? 9.8f * totalRocketMass : 0, 
             0);
 
         return fG + fThrust + fDrag + fNormal;
-    }
-
-    public void setStartingMass(float m) {
-        startingRocketMass = m;
-    }
-    public void setFuelBurnRate(float m) {
-        fuelEjectionRate = m;
-    }
-    public void setFuelEjectionSpeed(float m) {
-        fuelEjectionSpeed = m;
-    }
-    public void setBurnTime(float m) {
-        engineBurnTime = m;
     }
 }

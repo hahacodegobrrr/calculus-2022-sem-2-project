@@ -12,16 +12,33 @@ public class SetupParameter : MonoBehaviour
     {
         prelaunchParams = gameObject.transform.GetChild(0).gameObject;
         flightStats = gameObject.transform.GetChild(1).gameObject;
+        for (int i = 0; i < flightStats.transform.childCount; i++) {
+            flightStats.transform.GetChild(i).gameObject.SetActive(false);
+        }
+        for (int i = 0; i < prelaunchParams.transform.childCount; i++) {
+            prelaunchParams.transform.GetChild(i).gameObject.SetActive(true);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)) {
-            
+            for (int i = 0; i < prelaunchParams.transform.childCount; i++) {
+                prelaunchParams.transform.GetChild(i).gameObject.SetActive(false);
+            }
+            for (int i = 0; i < flightStats.transform.childCount; i++) {
+                flightStats.transform.GetChild(i).gameObject.SetActive(true);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.R)) {
+            for (int i = 0; i < flightStats.transform.childCount; i++) {
+                flightStats.transform.GetChild(i).gameObject.SetActive(false);
+            }
+            for (int i = 0; i < prelaunchParams.transform.childCount; i++) {
+                prelaunchParams.transform.GetChild(i).gameObject.SetActive(true);
+            }
 
         }
     }
