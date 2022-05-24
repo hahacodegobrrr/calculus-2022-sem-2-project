@@ -18,7 +18,7 @@ public class DataWriter : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update() {
+    void FixedUpdate() {
         timeSinceLaunch += Time.deltaTime;
         timeSinceLastCollection += Time.deltaTime;
         if (Input.GetKeyDown(KeyCode.Space) && !recordingData) {
@@ -35,7 +35,7 @@ public class DataWriter : MonoBehaviour
                 + ((System.DateTime.Now.Hour / 10 == 0)? "0" : "") + System.DateTime.Now.Hour + ":"
                 + ((System.DateTime.Now.Minute / 10 == 0) ? "0" : "") + System.DateTime.Now.Minute + ":"
                 + ((System.DateTime.Now.Second / 10 == 0) ? "0" : "") + System.DateTime.Now.Second);
-            writer.WriteLine("Time(s),Altitude(m),Airspeed(m/s),Acceleration(m/ss),Total rocket mass(kg),Fuel ejection speed(m/s),Thrust(N),Engine Burning");
+            writer.WriteLine("Time(s),Altitude(m),Airspeed(m/s),Acceleration(m/ss),Total rocket mass(kg),Drag(N),Thrust(N),Engine Burning");
             recordingData = true;
         }
 
@@ -46,9 +46,9 @@ public class DataWriter : MonoBehaviour
 
         if (recordingData && timeSinceLastCollection >= 0.1f) {
             if (dataBuffer == null) {
-                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.magnitude, Rocket.rocket.fuelEjectionSpeed, Rocket.rocket.totalRocketMass, 0, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
+                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.y, Rocket.rocket.drag, Rocket.rocket.totalRocketMass, 0, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
             } else {
-                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.magnitude, (Rocket.rocket.velocity.magnitude - dataBuffer.airSpeed) / timeSinceLastCollection, Rocket.rocket.totalRocketMass, Rocket.rocket.fuelEjectionSpeed, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
+                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.y, (Rocket.rocket.velocity.y - dataBuffer.airSpeed) / timeSinceLastCollection, Rocket.rocket.totalRocketMass, Rocket.rocket.drag, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
             }
             writer.WriteLine(dataBuffer.ToString());
             timeSinceLastCollection = 0;
@@ -62,17 +62,17 @@ public class DataPoint {
     public float airSpeed; //fetched
     public float acceleration; //calculated
     public float totalRocketMass; //fetched
-    public float fuelEjectionSpeed; //fetched
+    public float drag; //fetched
     public float thrust; //fetched
     public bool engineBurning; //fetched
 
-    public DataPoint(float timeSinceLaunch, float altitude, float airSpeed, float acceleration, float totalRocketMass, float fuelEjectionSpeed, float thrust, bool engineBurning) {
+    public DataPoint(float timeSinceLaunch, float altitude, float airSpeed, float acceleration, float totalRocketMass, float drag, float thrust, bool engineBurning) {
         this.timeSinceLaunch = timeSinceLaunch;
         this.altitude = altitude;
         this.airSpeed = airSpeed;
         this.acceleration = acceleration;
         this.totalRocketMass = totalRocketMass;
-        this.fuelEjectionSpeed = fuelEjectionSpeed;
+        this.drag = drag; 
         this.thrust = thrust;
         this.engineBurning = engineBurning;
     }
@@ -84,7 +84,7 @@ public class DataPoint {
             + airSpeed + ","
             + acceleration + ","
             + totalRocketMass + ","
-            + fuelEjectionSpeed + ","
+            + drag + ","
             + thrust + ","
             + engineBurning;
     }

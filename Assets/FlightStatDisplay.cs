@@ -17,8 +17,8 @@ public class FlightStatDisplay : MonoBehaviour
             text.text = "Air speed: " + Rocket.rocket.velocity.magnitude + " m/s";
         } else if (gameObject.name.Equals("mass")) {
             text.text = "Mass: " + Rocket.rocket.totalRocketMass + " kg";
-        } else if (gameObject.name.Equals("thrust")) {
-            text.text = "Thrust: " + Rocket.rocket.thrust + " N";
+        } else if (gameObject.name.Equals("drag")) {
+            text.text = "Drag: " + Rocket.rocket.drag + " N";
         }
     }
 }

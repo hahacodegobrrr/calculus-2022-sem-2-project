@@ -18,7 +18,7 @@ public class Rocket : MonoBehaviour
     public float totalRocketMass;
     public float altitude;
     public float thrust;
-    public float fuelEjectionSpeed;
+    public float drag; //in newtons
     public bool engineBurning;
 
     GameObject smokeEffects;
@@ -48,7 +48,7 @@ public class Rocket : MonoBehaviour
         fuelLeft = fuelMass;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         altitude = gameObject.transform.position.y;
 
@@ -82,6 +82,7 @@ public class Rocket : MonoBehaviour
         if (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0) {
             velocity.y = 0;
         }
+        drag = (0.75f * 0.00156f * 1.225f / 2) * velocity.magnitude * velocity.magnitude;
         gameObject.transform.position += velocity * Time.deltaTime;
     }
 
@@ -89,7 +90,7 @@ public class Rocket : MonoBehaviour
         Vector3 fG = new Vector3(0, -9.8f * totalRocketMass, 0);
         Vector3 fThrust = new Vector3(0, engineBurning ? impulse / burnTime : 0, 0);
         thrust = fThrust.magnitude;
-        Vector3 fDrag = new Vector3();
+        Vector3 fDrag = new Vector3(0, velocity.y > 0? -drag : drag, 0);
         Vector3 fNormal = new Vector3(0,
             (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0)? 9.8f * totalRocketMass : 0, 
             0);
