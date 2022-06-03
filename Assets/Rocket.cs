@@ -8,24 +8,24 @@ public class Rocket : MonoBehaviour
     public LayerMask groundMask;
 
     //starting parameters
-    public float rocketMass; //in kg
-    public float fuelMass; //in kg
-    public float burnTime; //in seconds
-    public float impulse; //in newton-seconds
+    public double rocketMass; //in kg
+    public double fuelMass; //in kg
+    public double burnTime; //in seconds
+    public double impulse; //in newton-seconds
 
     //data collection
     public Vector3 velocity;
-    public float totalRocketMass;
-    public float altitude;
-    public float thrust;
-    public float drag; //in newtons
+    public double totalRocketMass;
+    public double altitude;
+    public double thrust;
+    public double drag; //in newtons
     public bool engineBurning;
 
     GameObject smokeEffects;
+    GameObject fireEffects;
 
-
-    float fuelLeft;
-    float timeLeftOnBurn;
+    double fuelLeft;
+    double timeLeftOnBurn;
 
     void Start() {
         //default values at sim start
@@ -36,6 +36,7 @@ public class Rocket : MonoBehaviour
 
         rocket = this;
         smokeEffects = gameObject.transform.GetChild(0).gameObject;
+        fireEffects = gameObject.transform.GetChild(1).gameObject;
         ResetSim();
     }
 
@@ -62,12 +63,14 @@ public class Rocket : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space)) {
             engineBurning = true;
             smokeEffects.SetActive(true);
+            fireEffects.SetActive(true);
         }
 
         //when the engine time has been depleted, engine shuts off
         if (timeLeftOnBurn <= 0) {
             engineBurning = false;
             smokeEffects.SetActive(false);
+            fireEffects.SetActive(false);
         }
 
         if (engineBurning) {
@@ -78,7 +81,7 @@ public class Rocket : MonoBehaviour
 
         //physics calculations
         totalRocketMass = rocketMass + fuelLeft;
-        velocity += (CalculateFNet() / totalRocketMass) * Time.deltaTime;
+        velocity += (CalculateFNet() / (float)totalRocketMass) * Time.deltaTime;
         if (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0) {
             velocity.y = 0;
         }
@@ -86,13 +89,13 @@ public class Rocket : MonoBehaviour
         gameObject.transform.position += velocity * Time.deltaTime;
     }
 
-    Vector3 CalculateFNet() {        
-        Vector3 fG = new Vector3(0, -9.8f * totalRocketMass, 0);
-        Vector3 fThrust = new Vector3(0, engineBurning ? impulse / burnTime : 0, 0);
+    Vector3 CalculateFNet() {
+        Vector3 fG = new Vector3(0, (float)(-9.8f * totalRocketMass), 0);
+        Vector3 fThrust = new Vector3(0, (float)(engineBurning ? impulse / burnTime : 0), 0);
         thrust = fThrust.magnitude;
-        Vector3 fDrag = new Vector3(0, velocity.y > 0? -drag : drag, 0);
+        Vector3 fDrag = new Vector3(0, (float)(velocity.y > 0? -drag : drag), 0);
         Vector3 fNormal = new Vector3(0,
-            (Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0)? 9.8f * totalRocketMass : 0, 
+            (float)((Physics.CheckSphere(gameObject.transform.position - new Vector3(0, 5.3f, 0), 1, groundMask) && velocity.y < 0)? 9.8f * totalRocketMass : 0), 
             0);
 
         return fG + fThrust + fDrag + fNormal;

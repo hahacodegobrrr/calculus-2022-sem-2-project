@@ -46,10 +46,11 @@ public class DataWriter : MonoBehaviour
 
         if (recordingData && timeSinceLastCollection >= 0.1f) {
             if (dataBuffer == null) {
-                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.y, Rocket.rocket.drag, Rocket.rocket.totalRocketMass, 0, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
+                dataBuffer = new DataPoint(timeSinceLaunch, (float)Rocket.rocket.altitude, Rocket.rocket.velocity.y, (float)Rocket.rocket.drag, (float)Rocket.rocket.totalRocketMass, 0, (float)Rocket.rocket.thrust, Rocket.rocket.engineBurning);
             } else {
-                dataBuffer = new DataPoint(timeSinceLaunch, Rocket.rocket.altitude, Rocket.rocket.velocity.y, (Rocket.rocket.velocity.y - dataBuffer.airSpeed) / timeSinceLastCollection, Rocket.rocket.totalRocketMass, Rocket.rocket.drag, Rocket.rocket.thrust, Rocket.rocket.engineBurning);
+                dataBuffer = new DataPoint(timeSinceLaunch, (float)Rocket.rocket.altitude, Rocket.rocket.velocity.y, (Rocket.rocket.velocity.y - dataBuffer.airSpeed) / timeSinceLastCollection, (float)Rocket.rocket.totalRocketMass, (float)Rocket.rocket.drag, (float)Rocket.rocket.thrust, Rocket.rocket.engineBurning);
             }
+            Debug.Log(dataBuffer.ToString());
             writer.WriteLine(dataBuffer.ToString());
             timeSinceLastCollection = 0;
         }
